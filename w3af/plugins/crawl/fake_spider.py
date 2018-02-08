@@ -36,7 +36,7 @@ class fake_spider(CrawlPlugin):
     def __init__(self):
         CrawlPlugin.__init__(self)
     
-    @runonce(exc_class=RunOnce)
+    #@runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
         :param fuzzable_request: A fuzzable_request instance that contains

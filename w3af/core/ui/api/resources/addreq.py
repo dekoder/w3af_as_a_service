@@ -26,6 +26,7 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.factory import dc_from_hdrs_post
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.parsers.doc.url import URL
 
 from w3af import urllist
 
@@ -34,18 +35,19 @@ urllist.req_queue = Queue.Queue()
 
 @app.route('/scans/addreq', methods=['POST'])
 def add_req():
-    url = request.form.get('url')
-    method = request.form.get('method')
-    post_data = request.form.get('post_data')
-    cookie_string = request.form.get('cookie')
+    url = request.json["url"]
+    method = request.json["method"]
+    post_data = request.json["post_data"]
+    headers = request.json["headers"]
+    cookie_string = request.json['cookie']
     
-    headers = request.form.get('headers')
-    headers = Headers(json.loads(headers).items())   
+    headers = Headers(headers.items())   
 
-    freq = FuzzableRequest(url, method, headers,
+    freq = FuzzableRequest(URL(url), method, headers,
             Cookie(cookie_string),
             dc_from_hdrs_post(headers, post_data))
-    urllist.req_queue.put_nowait(freq)   
+    urllist.req_queue.put_nowait(freq)
+    print("req size %d" % urllist.req_queue.qsize())    
 
     return jsonify({"status": True})
 
