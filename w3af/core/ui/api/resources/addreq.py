@@ -20,17 +20,28 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from flask import jsonify, request
+
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.dc.cookie import Cookie
+from w3af.core.data.dc.factory import dc_from_hdrs_post
+from w3af.core.data.dc.headers import Headers
+
 from w3af.urllist import req_queue
 
-@app.route('/scans/addurl', methods=['POST'])
-def add_url():
+@app.route('/scans/addreq', methods=['POST'])
+def add_req():
     url = request.form.get('url')
     method = request.form.get('method')
     post_data = request.form.get('post_data')
-    cookie = request.form.get('cookie')
-    headers = request.form.get('headers')
+    cookie_string = request.form.get('cookie')
     
-    # TODO
-   
+    headers = request.form.get('headers')
+    headers = Headers(json.loads(headers).items())   
+
+    freq = FuzzableRequest(url, method, headers,
+            Cookie(cookie_string),
+            dc_from_hdrs_post(headers, post_data))
+    req_queue.put_nowait(freq)   
+
     return jsonify({"status": true})
 

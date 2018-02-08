@@ -19,16 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import w3af.core.controllers.output_manager as om
-import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
-from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.misc.decorators import runonce
-from w3af.core.data.kb.info import Info
 
-from w3af.urllist import url_queue
+import time
+
+from w3af.urllist import url_queue, req_queue
 
 class fake_spider(CrawlPlugin):
     """
@@ -44,6 +42,27 @@ class fake_spider(CrawlPlugin):
                                     (among other things) the URL to test.
         """
         while True:
-            url = url_queue.get()
-            self.worker_pool.map(self.http_get_and_parse, [url])
+            ul = []
+            rl = []
+            
+            while True:
+                try:
+                    url = url_queue.get_nowait()
+                    ul.append(url)
+                except Queue.Empty:
+                    break
+            
+            while True:
+                try:
+                    freq = req_queue.get_nowait()
+                    rl.append(freq)
+                except Queue.Empty:
+                    break
+            
+            for freq in rl:
+                self.output_queue.put(freq)
+
+            self.worker_pool.map(self.http_get_and_parse, ul)
+
+            time.sleep(2)
 
