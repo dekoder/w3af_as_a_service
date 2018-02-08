@@ -25,8 +25,9 @@ from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
 
 import time
+import Queue
 
-from w3af.urllist import url_queue, req_queue
+from w3af import urllist
 
 class fake_spider(CrawlPlugin):
     """
@@ -47,16 +48,16 @@ class fake_spider(CrawlPlugin):
             
             while True:
                 try:
-                    url = url_queue.get_nowait()
+                    url = urllist.url_queue.get_nowait()
                     ul.append(url)
-                except Queue.Empty:
-                    break
-            
+                except Queue.Empty, AttributeError:
+                    break           
+ 
             while True:
                 try:
-                    freq = req_queue.get_nowait()
+                    freq = urllist.req_queue.get_nowait()
                     rl.append(freq)
-                except Queue.Empty:
+                except Queue.Empty, AttributeError:
                     break
             
             for freq in rl:

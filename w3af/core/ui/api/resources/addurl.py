@@ -20,13 +20,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from flask import jsonify, request
-from w3af.urllist import url_queue
+from w3af.core.ui.api import app
+from w3af import urllist
+from w3af.core.data.parsers.doc.url import URL
+
+import Queue
+urllist.url_queue = Queue.Queue()
 
 @app.route('/scans/addurl', methods=['POST'])
 def add_url():
-    url = request.form.get('url')
+    url = request.json["url"]
     if url:
-        url_queue.put_nowait(url)
+        urllist.url_queue.put_nowait(URL(url))
    
-    return jsonify({"status": true})
+    return jsonify({"status": True})
 
